@@ -7,6 +7,8 @@ const doc = (typeof document !== 'undefined' ? document : null) as Document
 const templateContainer = doc && /*#__PURE__*/ doc.createElement('template')
 
 export const nodeOps: Omit<RendererOptions<Node, Element>, 'patchProp'> = {
+  // child 表示插入节点
+  // parent
   insert: (child, parent, anchor) => {
     parent.insertBefore(child, anchor || null)
   },
@@ -17,12 +19,15 @@ export const nodeOps: Omit<RendererOptions<Node, Element>, 'patchProp'> = {
       parent.removeChild(child)
     }
   },
-
+  // tag 表示创建的标签
+  // isSVG 表示该标签是否是svg
+  // is 表示用户创建Web Component 规范的自定义标签
+  // props 表示一些额外属性
   createElement: (tag, isSVG, is, props): Element => {
     const el = isSVG
       ? doc.createElementNS(svgNS, tag)
       : doc.createElement(tag, is ? { is } : undefined)
-
+    // 处理Select标签多选属性
     if (tag === 'select' && props && props.multiple != null) {
       ;(el as HTMLSelectElement).setAttribute('multiple', props.multiple)
     }
@@ -38,6 +43,8 @@ export const nodeOps: Omit<RendererOptions<Node, Element>, 'patchProp'> = {
     node.nodeValue = text
   },
 
+  // el 表示要设置文本的DOM节点
+  // text 表示要设置的文本
   setElementText: (el, text) => {
     el.textContent = text
   },

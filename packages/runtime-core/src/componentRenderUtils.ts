@@ -70,6 +70,7 @@ export function renderComponentRoot(
 
   try {
     if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+      // 有状态的组件渲染
       // withProxy is a proxy with a different `has` trap only for
       // runtime-compiled render functions using `with` block.
       const proxyToUse = withProxy || proxy
@@ -86,6 +87,7 @@ export function renderComponentRoot(
       )
       fallthroughAttrs = attrs
     } else {
+      // 函数式组件渲染
       // functional
       const render = Component as FunctionalComponent
       // in dev, mark attrs accessed if optional props (attrs === props)
@@ -116,6 +118,7 @@ export function renderComponentRoot(
   } catch (err) {
     blockStack.length = 0
     handleError(err, instance, ErrorCodes.RENDER_FUNCTION)
+    // 渲染出错则渲染成一个注释节点
     result = createVNode(Comment)
   }
 

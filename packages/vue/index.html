@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    {{count}}
+    <button @Click="changeArr">改变arr</button>
+    {{arr}}
+  </div>
+  <script src="./dist/vue.global.js"></script>
+  <script>
+    const { ref, reactive, createApp, h } = Vue
+    createApp({
+      setup() {
+        const count = ref(1)
+
+        const arr = ref(['a', 'b', 'c', 'd', 'e'])
+
+        function changeArr() {
+          arr.value = ['a', 'c', 'b', 'd', 'e']
+        }
+
+        return {
+          count,
+          arr,
+          changeArr
+        }
+      }
+    }).mount('#app')
+
+  </script>
+</body>
+
+</html>
