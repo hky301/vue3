@@ -295,6 +295,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
     if (key[0] !== '$') {
       const n = accessCache![key]
       if (n !== undefined) {
+        // 从缓存中获取
         switch (n) {
           case AccessTypes.SETUP:
             return setupState[key]
@@ -308,9 +309,11 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
         }
       } else if (setupState !== EMPTY_OBJ && hasOwn(setupState, key)) {
         accessCache![key] = AccessTypes.SETUP
+        // 从setupState中获取数据
         return setupState[key]
       } else if (data !== EMPTY_OBJ && hasOwn(data, key)) {
         accessCache![key] = AccessTypes.DATA
+        // 从data中获取数据
         return data[key]
       } else if (
         // only cache other properties when instance has declared (thus stable)
@@ -319,11 +322,14 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
         hasOwn(normalizedProps, key)
       ) {
         accessCache![key] = AccessTypes.PROPS
+        // 从props中获取数据
         return props![key]
       } else if (ctx !== EMPTY_OBJ && hasOwn(ctx, key)) {
         accessCache![key] = AccessTypes.CONTEXT
+        // 从ctx中获取数据
         return ctx[key]
       } else if (!__FEATURE_OPTIONS_API__ || shouldCacheAccess) {
+        // 都获取不到
         accessCache![key] = AccessTypes.OTHER
       }
     }
@@ -331,6 +337,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
     const publicGetter = publicPropertiesMap[key]
     let cssModule, globalProperties
     // public $xxx properties
+    // 公开的$xxx属性或方法
     if (publicGetter) {
       if (key === '$attrs') {
         track(instance, TrackOpTypes.GET, key)
@@ -339,16 +346,19 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
       return publicGetter(instance)
     } else if (
       // css module (injected by vue-loader)
+      // css模块,在vue-loader 编译的时候注入
       (cssModule = type.__cssModules) &&
       (cssModule = cssModule[key])
     ) {
       return cssModule
     } else if (ctx !== EMPTY_OBJ && hasOwn(ctx, key)) {
       // user may set custom properties to `this` that start with `$`
+      // 用户自定义的属性,也以$开头
       accessCache![key] = AccessTypes.CONTEXT
       return ctx[key]
     } else if (
       // global properties
+      // 全局定义的属性
       ((globalProperties = appContext.config.globalProperties),
       hasOwn(globalProperties, key))
     ) {
@@ -374,6 +384,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
         key.indexOf('__v') !== 0)
     ) {
       if (data !== EMPTY_OBJ && isReservedPrefix(key[0]) && hasOwn(data, key)) {
+        // 如果在data中定义的数据以$或_开头,会发出警告,原因是$和_是保留字符,不会做代理
         warn(
           `Property ${JSON.stringify(
             key
@@ -381,6 +392,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
             `character ("$" or "_") and is not proxied on the render context.`
         )
       } else if (instance === currentRenderingInstance) {
+        // 如果没有定义模块中使用的变量,则发出警告
         warn(
           `Property ${JSON.stringify(key)} was accessed during render ` +
             `but is not defined on instance.`
@@ -396,12 +408,15 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
   ): boolean {
     const { data, setupState, ctx } = instance
     if (setupState !== EMPTY_OBJ && hasOwn(setupState, key)) {
+      // 给setupState赋值
       setupState[key] = value
       return true
     } else if (data !== EMPTY_OBJ && hasOwn(data, key)) {
+      // 给data赋值
       data[key] = value
       return true
     } else if (hasOwn(instance.props, key)) {
+      // 不能直接给props赋值
       __DEV__ &&
         warn(
           `Attempting to mutate prop "${key}". Props are readonly.`,
@@ -410,6 +425,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
       return false
     }
     if (key[0] === '$' && key.slice(1) in instance) {
+      // 不能给Vue内部以$开头的保留属性赋值
       __DEV__ &&
         warn(
           `Attempting to mutate public property "${key}". ` +
@@ -425,6 +441,7 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
           value
         })
       } else {
+        // 给用户自定义数据赋值,比如在created生命周期内定义的数据,则它仅用于组件上下文的共享
         ctx[key] = value
       }
     }
