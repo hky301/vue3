@@ -199,6 +199,11 @@ function isInHmrContext(instance: ComponentInternalInstance | null) {
   }
 }
 
+// 主要目标：把父组件渲染时求得的props新值更新到子组件实例的instance.props中
+// instance表示组件的实例
+// rawProps表示新的props原始数据
+// rawPrevProps表示更新前props的原始数据
+// optimized表示是否开启编译优化
 export function updateProps(
   instance: ComponentInternalInstance,
   rawProps: Data | null,
@@ -225,6 +230,7 @@ export function updateProps(
     if (patchFlag & PatchFlags.PROPS) {
       // Compiler-generated props & no keys change, just set the updated
       // the props.
+      // 只更新动态props节点
       const propsToUpdate = instance.vnode.dynamicProps!
       for (let i = 0; i < propsToUpdate.length; i++) {
         let key = propsToUpdate[i]
@@ -270,11 +276,13 @@ export function updateProps(
     }
   } else {
     // full props update.
+    // 全量props更新
     if (setFullProps(instance, rawProps, props, attrs)) {
       hasAttrsChanged = true
     }
     // in case of dynamic props, check if we need to delete keys from
     // the props object
+    // 因为props数据可能是动态的，所以把不在新props中但存在于旧props中的值设置为undefined
     let kebabKey: string
     for (const key in rawCurrentProps) {
       if (

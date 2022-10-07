@@ -2328,6 +2328,7 @@ function baseCreateRenderer(
     const { bum, scope, update, subTree, um } = instance
 
     // beforeUnmount hook
+    // 执行beforeUnmount钩子函数
     if (bum) {
       invokeArrayFns(bum)
     }
@@ -2340,16 +2341,20 @@ function baseCreateRenderer(
     }
 
     // stop effects in component scope
+    // 清理组件引用的effects副作用函数
     scope.stop()
 
     // update may be null if a component is unmounted before its async
     // setup has resolved.
+    // 如果一个异步组件在加载前就被销毁了，则不会注册副作用渲染函数
     if (update) {
       // so that scheduler will no longer invoke it
       update.active = false
+      // 调用unmount销毁子树
       unmount(subTree, instance, parentSuspense, doRemove)
     }
     // unmounted hook
+    // 执行unmounted钩子函数
     if (um) {
       queuePostRenderEffect(um, parentSuspense)
     }

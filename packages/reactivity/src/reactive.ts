@@ -185,6 +185,7 @@ function createReactiveObject(
   collectionHandlers: ProxyHandler<any>,
   proxyMap: WeakMap<Target, any>
 ) {
+  // 目标必须是对象或数组类型
   if (!isObject(target)) {
     if (__DEV__) {
       console.warn(`value cannot be made reactive: ${String(target)}`)
@@ -209,10 +210,12 @@ function createReactiveObject(
   if (targetType === TargetType.INVALID) {
     return target
   }
+  // 利用Proxy创建响应式对象
   const proxy = new Proxy(
     target,
     targetType === TargetType.COLLECTION ? collectionHandlers : baseHandlers
   )
+  // 缓存已经代理的对象
   proxyMap.set(target, proxy)
   return proxy
 }
